@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Example Fishing Docks</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    html, body {
+      margin: 0; padding: 0;
+      background: #cbe7ff;
+      font-family: 'Roboto', Arial, sans-serif;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+    header {
+      background: #2a5d8f url('https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80') center/cover no-repeat;
+      color: white;
+      padding: 60px 0 40px 0;
+      text-align: center;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+      z-index: 1;
+      position: relative;
+    }
+    nav {
+      background: #1c3c5a;
+      text-align: center;
+      padding: 12px 0;
+      position: relative;
+      z-index: 1;
+    }
+    nav button {
+      background: none;
+      border: none;
+      color: #fff;
+      margin: 0 18px;
+      font-size: 1rem;
+      font-weight: 500;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: color 0.2s;
+      padding: 6px 12px;
+      border-radius: 4px;
+      outline: none;
+    }
+    nav button:hover, nav button.active {
+      color: #ffe066;
+      background: rgba(255,255,255,0.07);
+    }
+    .container {
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 0 20px;
+      min-height: 220px;
+      position: relative;
+      z-index: 1;
+    }
+    .page-content {
+      background: #fff;
+      border-radius: 10px;
+      padding: 36px;
+      box-shadow: 0 4px 24px rgba(44, 62, 80, 0.07);
+      text-align: center;
+      min-height: 180px;
+      position: relative;
+      z-index: 1;
+      transition: filter 0.2s, opacity 0.2s;
+    }
+    .page-content.hidden {
+      opacity: 0;
+      filter: blur(2px);
+      pointer-events: none;
+    }
+    .cta-btn {
+      display: inline-block;
+      margin-top: 28px;
+      padding: 13px 34px;
+      background: #2a5d8f;
+      color: #fff;
+      border-radius: 5px;
+      text-decoration: none;
+      font-size: 1.1rem;
+      font-weight: bold;
+      transition: background 0.2s;
+    }
+    .cta-btn:hover {
+      background: #23435c;
+    }
+    footer {
+      text-align: center;
+      padding: 18px 0;
+      background: #e6f6ff;
+      color: #23435c;
+      margin-top: 40px;
+      font-size: 0.98rem;
+      z-index: 1;
+      position: relative;
+    }
+    /* Water overlay */
+    .water {
+      position: fixed;
+      left: 0; right: 0;
+      bottom: 0;
+      height: 0;
+      background: linear-gradient(to top, #4fc3f7 90%, #81d4fa 100%);
+      z-index: 100;
+      overflow: visible;
+      transition: height 0.8s cubic-bezier(.5,1.5,.5,1);
+      border-top-left-radius: 40px;
+      border-top-right-radius: 40px;
+      box-shadow: 0 -4px 40px 0 #4fc3f7aa;
+      pointer-events: none;
+    }
+    .water.rise {
+      height: 320px;
+      transition: height 0.8s cubic-bezier(.5,1.5,.5,1);
+    }
+    .water.drain {
+      animation: water-drain 1.1s cubic-bezier(.5,1.5,.5,1) forwards;
+    }
+    @keyframes water-drain {
+      0% { height: 320px; }
+      80% { height: 320px; }
+      100% { height: 0; }
+    }
+    /* Boat and Fish - positioned relative to .water */
+    .boat, .fish {
+      position: absolute;
+      z-index: 120;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+    }
+    .boat {
+      width: 260px;
+      height: 150px;
+      left: 100vw;
+      top: -75px;
+    }
+    .fish {
+      width: 90px;
+      height: 60px;
+      left: 100vw;
+      top: 35px;
+    }
+    @keyframes swim-fish {
+      0% { left: 100vw; opacity: 1; }
+      10% { opacity: 1;}
+      90% { opacity: 1;}
+      100% { left: -120px; opacity: 0;}
+    }
+    @keyframes swim-boat {
+      0% { left: 100vw; opacity: 1;}
+      10% { opacity: 1;}
+      90% { opacity: 1;}
+      100% { left: -260px; opacity: 0;}
+    }
+    .fish.swim {
+      animation: swim-fish 1.6s linear forwards;
+      opacity: 1;
+    }
+    .boat.swim {
+      animation: swim-boat 1.6s linear forwards;
+      opacity: 1;
+      animation-delay: 0.25s;
+    }
+    /* Drain tornado at the bottom */
+    .drain-tornado {
+      position: absolute;
+      left: 50%;
+      bottom: 10px;
+      transform: translateX(-50%) scale(0);
+      z-index: 200;
+      width: 60px;
+      height: 60px;
+      pointer-events: none;
+      opacity: 0;
+      transition: opacity 0.2s;
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+    }
+    .drain-tornado.active {
+      animation: tornado-spin 1.1s cubic-bezier(.5,1.5,.5,1) forwards;
+      opacity: 1;
+    }
+    @keyframes tornado-spin {
+      0% {
+        transform: translateX(-50%) scale(0) rotate(0deg);
+        opacity: 1;
+      }
+      20% {
+        transform: translateX(-50%) scale(1.1) rotate(180deg);
+        opacity: 1;
+      }
+      70% {
+        transform: translateX(-50%) scale(1.2) rotate(720deg);
+        opacity: 1;
+      }
+      100% {
+        transform: translateX(-50%) scale(0) rotate(1080deg);
+        opacity: 0;
+      }
+    }
+    /* Responsive adjustments */
+    @media (max-width: 600px) {
+      .container { padding: 0 5px; }
+      .page-content { padding: 12px; }
+      .water, .water.rise { height: 180px; }
+      .boat { width: 120px; height: 70px; top: -35px; }
+      .fish { width: 55px; height: 35px; top: 20px; }
+      .drain-tornado { width: 30px; height: 30px; }
+    }
+    /* Contact table styling */
+    table.contact-info {
+      margin: 0 auto;
+      text-align: left;
+      font-size: 1rem;
+      border-collapse: collapse;
+    }
+    table.contact-info td {
+      padding: 6px 12px;
+      vertical-align: top;
+    }
+    table.contact-info td:first-child {
+      font-weight: bold;
+      white-space: nowrap;
+      padding-right: 20px;
+    }
+    table.contact-info a {
+      color: #2a5d8f;
+      text-decoration: none;
+    }
+    table.contact-info a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Example Fishing Docks</h1>
+    <p>Your destination for fishing in Tioga</p>
+  </header>
+  <nav>
+    <button class="active" data-page="home">Home</button>
+    <button data-page="about">About</button>
+    <button data-page="rates">Rates</button>
+    <button data-page="contact">Contact</button>
+  </nav>
+  <div class="container">
+    <div id="page-content" class="page-content">
+      <!-- Home Content (default) -->
+      <h2>Welcome to Example Fishing Docks!</h2>
+      <p>
+        Discover your new favorite spot for fishing in Tioga. Example Fishing Docks is preparing to open soon, offering a fresh, modern dock experience for anglers of all levels.
+      </p>
+      <p>
+        Stay tuned for updates on our grand opening, amenities, and how you can be among the first to cast a line!
+      </p>
+      <a class="cta-btn" href="#">Get Updates</a>
+    </div>
+  </div>
+  <footer>
+    &copy; 2025 Example Fishing Docks. All rights reserved.
+  </footer>
+
+  <!-- Water overlay -->
+  <div class="water" id="water">
+    <!-- Boat image (on water) -->
+    <img class="boat" id="boat" src="https://png.pngtree.com/png-vector/20190119/ourmid/pngtree-cartoon-ship-ship-sea-png-image_482617.png" alt="Boat" />
+    <!-- Fish image (just under water) -->
+    <img class="fish" id="fish" src="https://pngcore.com/files/preview/800x800/11695315407dxwdqrgmdoeiejmjgsfn0xjaoaqphxw0zh5tdwe9aziz6wtuv053wlnnojvuew8exsrau7ni6wiptyp9ukjym3nvoaruvkksqscr.png" alt="Fish" />
+    <!-- Drain tornado at bottom center -->
+    <div class="drain-tornado" id="tornado">
+      <svg viewBox="0 0 60 60">
+        <ellipse cx="30" cy="54" rx="15" ry="5" fill="#b3e5fc" opacity="0.7" />
+        <path d="M30 10 Q35 25 25 30 Q40 35 20 45 Q35 50 30 54 Q25 50 40 45 Q20 35 35 30 Q25 25 30 10" fill="none" stroke="#4fc3f7" stroke-width="3" />
+        <ellipse cx="30" cy="54" rx="5" ry="2" fill="#4fc3f7" opacity="0.9" />
+      </svg>
+    </div>
+  </div>
+
+  <script>
+    // Subpage HTML content with updated Contact page including number column
+    const pages = {
+      home: `
+        <h2>Welcome to Example Fishing Docks!</h2>
+        <p>
+          Discover your new favorite spot for fishing in Tioga. Example Fishing Docks is preparing to open soon, offering a fresh, modern dock experience for anglers of all levels.
+        </p>
+        <p>
+          Stay tuned for updates on our grand opening, amenities, and how you can be among the first to cast a line!
+        </p>
+        <a class="cta-btn" href="#">Get Updates</a>
+      `,
+      about: `
+        <h2>About Example Fishing Docks</h2>
+        <p>
+          Example Fishing Docks is a new fishing destination coming soon to Tioga. We're building a modern, accessible dock designed to welcome anglers, families, and anyone looking to enjoy the water.
+        </p>
+        <p>
+          Our goal is to provide a clean, safe, and enjoyable environment for fishing and relaxation. More details about our facilities and opening date will be announced soon.
+        </p>
+      `,
+      rates: `
+        <h2>Dock Access & Rates</h2>
+        <p>
+          Example Fishing Docks will offer daily and seasonal access options for individuals and groups. Equipment rentals and bait will be available on site.
+        </p>
+        <ul style="text-align:left;display:inline-block;">
+          <li><strong>Dock Access:</strong> Coming soon</li>
+          <li><strong>Equipment Rental:</strong> Coming soon</li>
+          <li><strong>Bait:</strong> Coming soon</li>
+          <li><strong>Group Packages:</strong> Coming soon</li>
+        </ul>
+        <p>
+          Check back soon for our full list of rates and services!
+        </p>
+      `,
+      contact: `
+        <h2>Contact Example Fishing Docks</h2>
+        <p>
+          Have a question or want to be notified when we open? Reach out and we'll get back to you!
+        </p>
+        <table class="contact-info">
+          <tbody>
+            <tr>
+              <td>Location:</td>
+              <td>Tioga, TX</td>
+            </tr>
+            <tr>
+              <td>Email:</td>
+              <td><a href="mailto:info@examplefishingdocks.com">info@examplefishingdocks.com</a></td>
+            </tr>
+            <tr>
+              <td>Number:</td>
+              <td><a href="tel:+18175019109">+1 817-501-9109</a></td>
+            </tr>
+          </tbody>
+        </table>
+        <p>
+          <a class="cta-btn" href="mailto:info@examplefishingdocks.com">Contact Us</a>
+        </p>
+      `
+    };
+
+    const navButtons = document.querySelectorAll('nav button');
+    const pageContent = document.getElementById('page-content');
+    const water = document.getElementById('water');
+    const fish = document.getElementById('fish');
+    const boat = document.getElementById('boat');
+    const tornado = document.getElementById('tornado');
+    let isAnimating = false;
+
+    navButtons.forEach(btn => {
+      btn.addEventListener('click', function() {
+        if (btn.classList.contains('active') || isAnimating) return;
+        isAnimating = true;
+
+        navButtons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        // 1. Hide content, water rises
+        pageContent.classList.add('hidden');
+        water.classList.remove('drain');
+        water.classList.add('rise');
+
+        // 2. Fish swims in
+        setTimeout(() => {
+          fish.classList.remove('swim');
+          void fish.offsetWidth; // force reflow
+          fish.classList.add('swim');
+        }, 400);
+
+        // 3. Boat swims in
+        setTimeout(() => {
+          boat.classList.remove('swim');
+          void boat.offsetWidth;
+          boat.classList.add('swim');
+        }, 600);
+
+        // 4. Tornado drain after fish and boat finish
+        setTimeout(() => {
+          tornado.classList.add('active');
+          water.classList.remove('rise');
+          water.classList.add('drain');
+        }, 2000);
+
+        // 5. Swap content and reset everything
+        setTimeout(() => {
+          tornado.classList.remove('active');
+          water.classList.remove('drain');
+          fish.classList.remove('swim');
+          boat.classList.remove('swim');
+          pageContent.innerHTML = pages[btn.dataset.page];
+          pageContent.classList.remove('hidden');
+          isAnimating = false;
+        }, 3100);
+      });
+    });
+  </script>
+</body>
+</html>
