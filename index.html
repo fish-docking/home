@@ -87,13 +87,37 @@
     }
     footer {
       text-align: center;
-      padding: 18px 0;
+      padding: 18px 0 10px 0;
       background: #e6f6ff;
       color: #23435c;
       margin-top: 40px;
       font-size: 0.98rem;
       z-index: 1;
       position: relative;
+    }
+    .site-credit {
+      width: 100%;
+      text-align: center;
+      font-size: 0.95rem;
+      padding: 7px 0 10px 0;
+      background: #e6f6ff;
+      color: #23435c;
+      position: fixed;
+      left: 0; right: 0; bottom: 0;
+      z-index: 999;
+      border-top: 1px solid #b3e5fc;
+      letter-spacing: 0.2px;
+    }
+    .site-credit .provider-link {
+      color: #ff9800;
+      font-weight: bold;
+      text-decoration: underline;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+    .site-credit .provider-link:hover {
+      color: #e65100;
+      text-decoration: underline wavy;
     }
     /* Water overlay */
     .water {
@@ -209,6 +233,7 @@
       .boat { width: 120px; height: 70px; top: -35px; }
       .fish { width: 55px; height: 35px; top: 20px; }
       .drain-tornado { width: 30px; height: 30px; }
+      .site-credit { font-size: 0.85rem; padding: 6px 0 8px 0; }
     }
     /* Contact table styling */
     table.contact-info {
@@ -262,6 +287,11 @@
   <footer>
     &copy; 2025 Example Fishing Docks. All rights reserved.
   </footer>
+
+  <div class="site-credit">
+    This site was made by
+    <a class="provider-link" href="https://nickswebcrafts.github.io/home/" target="_blank" rel="noopener">Nick's Webcraft's</a>
+  </div>
 
   <!-- Water overlay -->
   <div class="water" id="water">
